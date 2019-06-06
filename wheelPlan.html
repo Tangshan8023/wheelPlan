@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>轮播图</title>
+    <style>
+        * {
+            margin:0;
+            padding:0;
+        }
+    </style>
+</head>
+<body style="background-color: #f5f5f5">
+
+<script>
+    var position = 0;
+    var imgCon;
+    var imgArr;
+    var leftBn;
+    var rightBn;
+    var ulList;
+    init();
+    function init() {
+        var rollDiv = createDiv({margin: "100px auto", width: "400px", height: "300px", position: "relative", backgroundColor: "deeppink", overflow: "hidden"}, document.body);
+        imgCon = createDiv({width: "2000px", height: "300px", position: "absolute", left: "0px", top: "0px", backgroundColor: "green", zoom: "1",transitionProperty: "left",transitionDuration: "1s",transitionTimingFunction: "linear"}, rollDiv);
+        clearFloat(imgCon+":after{display: block; clear: both; content: ''; height: 0px; visibility: hidden;}");
+        imgArr = ["./img/a.jpg","./img/b.jpg","./img/c.jpg","./img/d.jpg","./img/e.jpg"];
+        createImg({width: "400px", height: "300px", float: "left"}, imgCon);
+        leftBn = createBtnImg({width: "30px", height: "40px",cursor: "pointer", position: "absolute", left: "0px", top: (rollDiv.offsetHeight-40)/2 + "px", backgroundColor: "rgba(0, 0, 0, 0.3)"}, './img/left.png', rollDiv);
+        rightBn = createBtnImg({width: "30px", height: "40px",cursor: "pointer", position: "absolute", right: "0px", top: (rollDiv.offsetHeight-40)/2 + "px", backgroundColor: "rgba(0, 0, 0, 0.3)"}, './img/right.png', rollDiv);
+        ulList = tableBarDot({
+            listStyle: "none",
+            width: rollDiv.offsetWidth+"px",
+            height: "20px",
+            position: "absolute",
+            left: "0px",
+            bottom:"5px",
+            display: "flex",
+            flexDirection: "row",
+            justifyContent: "center",
+            alignItems: "center"
+        },{
+            width: "20px",
+            height: "20px",
+            margin: "0px 5px",
+            borderRadius: "10px",
+            backgroundColor: "rgba(255, 0, 0, 0.5)",
+            color: "#ffffff",
+            textAlign: "center",
+            lineHeight: "20px",
+            cursor: "pointer"
+        }, rollDiv);
+        /*
+        * 初始化小圆点
+        * */
+        ulList.children[0].style.backgroundColor = "rgba(255, 0, 0, 1)";
+    }
+
+    
+    /*
+    * 创建DIV
+    * */
+    function createDiv(style, parent) {
+        var div = document.createElement("div");
+        setStyle(div, style);
+        parent.appendChild(div);
+        return div;
+    }
+    /*
+    * 创建图片
+    * */
+    function createImg(style, parent) {
+        for(var j=0; j<imgArr.length; j++){
+            var div = document.createElement("div");
+            setStyle(div, style);
+
+            var img = new Image();
+            img.src = imgArr[j];
+            img.style.width = "400px";
+            img.style.height = "300px";
+
+            div.appendChild(img);
+            parent.appendChild(div);
+        }
+    }
+    /*
+    * 创建左右按钮
+    * */
+    function createBtnImg(style, src, parent) {
+        var div = document.createElement("div");
+        setStyle(div, style);
+        var img = new Image();
+        img.src = src;
+        img.style.height = "40px";
+        img.style.width = "30px";
+        div.appendChild(img);
+        div.addEventListener("click", btnClickHandler);
+        parent.appendChild(div);
+
+        return div;
+    }
+    /*
+    * 左右按钮点击事件
+    * */
+    function btnClickHandler(e) {
+        e = e || window.event;
+        if(leftBn === this){
+            position--;
+            if(position < 0) position=4;
+        }else if(rightBn === this){
+            position++;
+            if(position > 4) position=0;
+        }
+
+        signPosition(position);
+        imgCon.style.left = -position*400 + "px";
+    }
+    /*
+    * 底部小圆点
+    * */
+    function tableBarDot(ulStyle, liStyle, parent) {
+        var ul = document.createElement("ul");
+        setStyle(ul, ulStyle);
+        for(var i=0; i<imgArr.length; i++){
+            var li = document.createElement("li");
+            li.textContent = i+1;
+            setStyle(li, liStyle);
+            li.addEventListener("click", liClickHandler);
+            ul.appendChild(li);
+        }
+        parent.appendChild(ul);
+
+        return ul;
+    }
+    /*
+    * 小圆点点击事件
+    * */
+    function liClickHandler(e) {
+        e = e || window.event;
+        for(var i=0; i<ulList.children.length; i++){
+            ulList.children[i].style.backgroundColor = "rgba(255, 0, 0, 0.5)";
+            if(this === ulList.children[i]){
+                position = i;
+            }
+        }
+        ulList.children[position].style.backgroundColor = "rgba(255, 0, 0, 1)";
+        imgCon.style.left = -position*400 + "px";
+    }
+    /*
+    * 为元素增加样式
+    * */
+    function setStyle(ele, style) {
+        for(var sty in style){
+            ele.style[sty] = style[sty];
+        }
+    }
+
+    /*
+    * 给元素添加伪元素after并清除浮动
+    * */
+    function clearFloat(css) {
+        var style = document.createElement("style");
+        style.type = "text/css";
+        try{
+            style.appendChild(document.createTextNode(css));
+        }catch(ex) {
+            console.log(ex);
+            style.stylesheet.cssText = css;
+        }
+
+        var head = document.getElementsByTagName("head")[0];
+        head.appendChild(style);
+    }
+    /*
+    * 标记当前显示的图片位置
+    * */
+    function signPosition(p) {
+        for(var i=0; i<ulList.children.length; i++){
+            ulList.children[i].style.backgroundColor = "rgba(255, 0, 0, 0.5)";
+        }
+        ulList.children[p].style.backgroundColor = "rgba(255, 0, 0, 1)";
+    }
+</script>
+</body>
+</html>
